@@ -1,0 +1,92 @@
+:root {
+  --bg-base: #0a0a0c;
+  --bg-surface: #121216;
+  --bg-hover: #1e1e24;
+  
+  --text-primary: #e0e0e0;
+  --text-secondary: #8c8c9a;
+  
+  --color-bid: #00b875;
+  --color-bid-bg: rgba(0, 184, 117, 0.15);
+  --color-bid-flash: rgba(0, 184, 117, 0.4);
+  
+  --color-ask: #ff4d4d;
+  --color-ask-bg: rgba(255, 77, 77, 0.15);
+  --color-ask-flash: rgba(255, 77, 77, 0.4);
+
+  --font-mono: 'JetBrains Mono', 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular-nums {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Flash animation for row updates */
+@keyframes flash-bid {
+  0% { background-color: var(--color-bid-flash); }
+  100% { background-color: transparent; }
+}
+
+@keyframes flash-ask {
+  0% { background-color: var(--color-ask-flash); }
+  100% { background-color: transparent; }
+}
+
+.flash-bid {
+  animation: flash-bid 300ms ease-out;
+}
+
+.flash-ask {
+  animation: flash-ask 300ms ease-out;
+}
+
+.depth-bar-container {
+  position: relative;
+  width: 100%;
+}
+
+.depth-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 0;
+  transition: width 0.1s ease-out;
+}
+
+.depth-bar.bid {
+  right: 0;
+  background-color: var(--color-bid-bg);
+}
+
+.depth-bar.ask {
+  left: 0;
+  background-color: var(--color-ask-bg);
+}
+
+.row-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-hover);
+  border-radius: 3px;
+}
