@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BookLevel } from '../types/book';
+import type { BookLevel } from '../types/book';
 import '../styles/tokens.css';
 
 interface Props {

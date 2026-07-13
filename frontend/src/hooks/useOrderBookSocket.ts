@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { BookSnapshot } from '../types/book';
+import type { BookSnapshot } from '../types/book';
 
 export function useOrderBookSocket(symbol: string) {
   const [snapshot, setSnapshot] = useState<BookSnapshot | null>(null);

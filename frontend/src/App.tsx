@@ -14,14 +14,14 @@ function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: '20px', gap: '20px', boxSizing: 'border-box' }}>
-      
+
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--bg-hover)', paddingBottom: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 600 }}>Synthetic Order Book</h1>
-          <span style={{ 
-            fontSize: '12px', 
-            padding: '4px 8px', 
-            borderRadius: '4px', 
+          <span style={{
+            fontSize: '12px',
+            padding: '4px 8px',
+            borderRadius: '4px',
             backgroundColor: isConnected ? 'rgba(0, 184, 117, 0.2)' : 'rgba(255, 77, 77, 0.2)',
             color: isConnected ? 'var(--color-bid)' : 'var(--color-ask)'
           }}>

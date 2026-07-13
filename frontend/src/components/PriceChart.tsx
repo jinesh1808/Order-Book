@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createChart, IChartApi, ISeriesApi } from 'lightweight-charts';
-import { BookSnapshot } from '../types/book';
+import type { BookSnapshot } from '../types/book';
 
 interface Props {
   snapshot: BookSnapshot | null;
