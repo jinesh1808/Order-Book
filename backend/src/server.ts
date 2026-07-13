@@ -25,11 +25,15 @@ const ocamlBridge = new OCamlBridge(symbol);
 const bookGateway = new BookGateway(io);
 
 // Wiring
+let tickCount = 0;
 binanceClient.on('tick', (tick) => {
+  tickCount++;
+  if (tickCount % 10 === 0) console.log('Ticks received:', tickCount, 'Latest price:', tick.price);
   ocamlBridge.sendTick(tick);
 });
 
 ocamlBridge.on('snapshot', (snapshot) => {
+  if (tickCount % 10 === 0) console.log('Snapshot received from OCaml');
   bookGateway.broadcastSnapshot(snapshot);
 });
 
