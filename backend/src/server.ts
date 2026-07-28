@@ -95,7 +95,7 @@ app.post('/orders', (req, res) => {
   const numPrice = Number(price);
   const numSize = Number(size);
   if (numSize < 0.0001 || numSize > 2) {// order ka limit
-    return res.status(400).json({ error: 'Order size must be between 0.0001 and 10' });
+    return res.status(400).json({ error: 'Order size must be between 0.0001 and 2' });
   }
   if (lastKnownPrice > 0) {
     const maxDeviation = lastKnownPrice * 0.2;//20% ka range
