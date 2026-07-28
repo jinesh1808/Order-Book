@@ -19,3 +19,20 @@ type book_snapshot = {
   s_asks: book_level list;
   s_timestamp: int;
 }
+
+type order = {
+  o_id: string;
+  o_user: string;
+  o_side: side;
+  o_price: float;
+  o_size: float;
+  o_timestamp: int;
+}
+
+type trade = {
+  tr_maker_order_id: string;
+  tr_taker_order_id: string;
+  tr_price: float;
+  tr_size: float;
+  tr_timestamp: int;
+}

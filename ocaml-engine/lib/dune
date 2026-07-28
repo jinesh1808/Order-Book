@@ -1,3 +1,4 @@
 (library
  (name engine)
- (modules types level book))
+ (libraries unix)
+ (modules types level matcher book))

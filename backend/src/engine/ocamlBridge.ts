@@ -37,10 +37,14 @@ export class OCamlBridge extends EventEmitter {
       for (const line of lines) {
         if (!line.trim()) continue;
         try {
-          const snapshot = JSON.parse(line) as BookSnapshot;
-          this.emit('snapshot', snapshot);
+          const parsed = JSON.parse(line);
+          if (parsed.type === 'book') {
+            this.emit('snapshot', parsed.data as BookSnapshot);
+          } else if (parsed.type === 'trades') {
+            this.emit('trades', parsed.data); // will type correctly later
+          }
         } catch (e) {
-          console.error('Failed to parse snapshot from OCaml engine:', e, line);
+          console.error('Failed to parse message from OCaml engine:', e, line);
         }
       }
     });
@@ -53,6 +57,20 @@ export class OCamlBridge extends EventEmitter {
   public sendTick(tick: Tick) {
     if (this.process && this.process.stdin && !this.process.killed) {
       const line = `${tick.symbol} ${tick.price} ${tick.size} ${tick.side} ${tick.timestamp}\n`;
+      this.process.stdin.write(line);
+    }
+  }
+
+  public sendOrder(userId: string, side: 'buy' | 'sell', price: number, size: number, orderId: string) {
+    if (this.process && this.process.stdin && !this.process.killed) {
+      const line = `ORDER ${userId} ${side} ${price} ${size} ${orderId}\n`;
+      this.process.stdin.write(line);
+    }
+  }
+
+  public cancelOrder(orderId: string) {
+    if (this.process && this.process.stdin && !this.process.killed) {
+      const line = `CANCEL ${orderId}\n`;
       this.process.stdin.write(line);
     }
   }

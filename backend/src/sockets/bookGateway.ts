@@ -30,6 +30,7 @@ export class BookGateway {
   }
 
   public broadcastSnapshot(snapshot: BookSnapshot) {
-    this.io.to(snapshot.symbol).emit('book', snapshot);
+    console.log(`Broadcasting snapshot globally with ${snapshot.bids.length} bids and ${snapshot.asks.length} asks`);
+    this.io.emit('book', snapshot);
   }
 }

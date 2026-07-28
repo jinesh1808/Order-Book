@@ -1,42 +1,62 @@
 open Types
+open Matcher
 
-type t = {
-  symbol: string;
-  mutable last_price: float;
-}
+type t = book_state
 
-let empty symbol = {
-  symbol;
+let empty _symbol = {
+  bids = BidMap.empty;
+  asks = AskMap.empty;
   last_price = 0.0;
 }
 
-let generate_levels center_price side depth =
-  let spread = 0.1 in
-  let price_step = 0.5 in
-  let rec aux d acc =
-    if d = 0 then List.rev acc
-    else
-      let dist = float_of_int (depth - d + 1) in
-      let price = 
-        match side with
-        | Buy -> center_price -. (spread /. 2.0) -. (dist *. price_step)
-        | Sell -> center_price +. (spread /. 2.0) +. (dist *. price_step)
-      in
-      let hash = Hashtbl.hash price in
-      let base_size = float_of_int (hash mod 100) /. 10.0 +. 0.5 in
-      let noise = (Random.float 0.4) -. 0.2 in
-      let size = max 0.01 (base_size +. noise) in
-      aux (d - 1) ({l_price=price; l_size=size} :: acc)
+let get_snapshot t =
+  let bid_levels = 
+    BidMap.fold (fun price queue acc ->
+      let total_size = List.fold_left (fun sum o -> sum +. o.o_size) 0.0 (Fifo.to_list queue) in
+      if total_size > 0.0 then { l_price = price; l_size = total_size } :: acc else acc
+    ) t.bids [] |> List.rev
   in
-  aux depth []
+  let ask_levels = 
+    AskMap.fold (fun price queue acc ->
+      let total_size = List.fold_left (fun sum o -> sum +. o.o_size) 0.0 (Fifo.to_list queue) in
+      if total_size > 0.0 then { l_price = price; l_size = total_size } :: acc else acc
+    ) t.asks [] |> List.rev
+  in
+  {
+    s_symbol = "btcusdt"; (* Or keep it in the book state, but since it's hardcoded for now, this is fine, or we can add it to book_state *)
+    s_bids = bid_levels;
+    s_asks = ask_levels;
+    s_timestamp = int_of_float (Unix.gettimeofday () *. 1000.);
+  }
 
 let apply_tick t tick =
   t.last_price <- tick.t_price;
-  let bids = generate_levels tick.t_price Buy 15 in
-  let asks = generate_levels tick.t_price Sell 15 in
-  {
-    s_symbol = t.symbol;
-    s_bids = bids;
-    s_asks = asks;
-    s_timestamp = tick.t_timestamp;
-  }
+  get_snapshot t
+
+let cancel_order t order_id =
+  let clean_bid_map = BidMap.map (fun q -> Fifo.remove q (fun o -> o.o_id = order_id)) t.bids in
+  let clean_ask_map = AskMap.map (fun q -> Fifo.remove q (fun o -> o.o_id = order_id)) t.asks in
+  
+  (* Clean up empty levels *)
+  let clean_bid_map = BidMap.filter (fun _ q -> not (Fifo.is_empty q)) clean_bid_map in
+  let clean_ask_map = AskMap.filter (fun _ q -> not (Fifo.is_empty q)) clean_ask_map in
+  
+  t.bids <- clean_bid_map;
+  t.asks <- clean_ask_map;
+  get_snapshot t
+
+let add_limit_order t order =
+  let trades, rem_order_opt = Matcher.match_order t order in
+  
+  (match rem_order_opt with
+   | Some rem_order ->
+       (match rem_order.o_side with
+        | Buy ->
+            let existing = match BidMap.find_opt rem_order.o_price t.bids with Some q -> q | None -> Fifo.empty in
+            t.bids <- BidMap.add rem_order.o_price (Fifo.enqueue existing rem_order) t.bids
+        | Sell ->
+            let existing = match AskMap.find_opt rem_order.o_price t.asks with Some q -> q | None -> Fifo.empty in
+            t.asks <- AskMap.add rem_order.o_price (Fifo.enqueue existing rem_order) t.asks)
+   | None -> ());
+   
+  (trades, get_snapshot t)
