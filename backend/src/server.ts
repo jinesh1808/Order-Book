@@ -10,6 +10,30 @@ import { MarketMaker } from './engine/marketMaker';
 import { Order, Trade } from './engine/types';
 import db from './db';
 
+// User ID -> array of timestamps (jab order place kiya)
+const userOrderTimestamps = new Map<string, number[]>();
+
+function isRateLimited(userId: string): boolean {
+  const now = Date.now();//present time
+  const oneSecondAgo = now - 1000;
+
+  //now finding older timestamps for this user
+  const timestamps = userOrderTimestamps.get(userId) || [];
+
+  // sirf woh timestamps rakh raha hu jo last 1 second ke andar hain
+  const recentTimestamps = timestamps.filter(t => t > oneSecondAgo);
+  //if in the past 5 secs there are already 5 ormore than , then reject
+  if (recentTimestamps.length >= 5) {
+    return true;//rate is limited
+  }
+  //new timestamps for current orders 
+  recentTimestamps.push(now);
+  userOrderTimestamps.set(userId, recentTimestamps);
+
+  return false;//then proceed this order
+
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -64,7 +88,21 @@ app.post('/orders', (req, res) => {
   if (!user_id || !side || !price || !size) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
-
+  if (isRateLimited(user_id)) {
+    return res.status(429).json({ error: 'Too many orders, please slow down' });
+  }
+  //price validation and size validation 
+  const numPrice = Number(price);
+  const numSize = Number(size);
+  if (numSize < 0.0001 || numSize > 2) {// order ka limit
+    return res.status(400).json({ error: 'Order size must be between 0.0001 and 10' });
+  }
+  if (lastKnownPrice > 0) {
+    const maxDeviation = lastKnownPrice * 0.2;//20% ka range
+    if (Math.abs(numPrice - lastKnownPrice) > maxDeviation) {
+      return res.status(400).json({ error: 'Price too far from current market price' });
+    }
+  }
   const orderId = uuidv4();
   const newOrder = placeOrder(user_id, side, Number(price), Number(size), orderId);
   res.json(newOrder);
