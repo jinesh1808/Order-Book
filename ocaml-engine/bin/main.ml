@@ -51,6 +51,17 @@ let rec loop book =
         print_snapshot snapshot;
         flush stdout;
         loop book
+    
+    (*reset code
+    mutating the existing book only no fresh_book created *) 
+    | "RESET" :: _ ->
+         let snapshot = Engine.Book.reset book in
+         print_snapshot snapshot;
+         print_endline "{\"type\":\"reset\",\"status\":\"ok\"}";
+         flush stdout;
+         loop book
+    
+    
     | symbol :: price_str :: size_str :: side_str :: timestamp_str :: _ ->
         (* Binace tick *)
         let price = float_of_string price_str in
@@ -74,5 +85,6 @@ let () =
   let symbol = 
     if Array.length Sys.argv > 1 then Sys.argv.(1) else "btcusdt"
   in
-  let book = Engine.Book.empty symbol in
+  let book = Engine.Book.empty symbol in (*fresh book banane wala function --Engine.Book.empty*)
   loop book
+

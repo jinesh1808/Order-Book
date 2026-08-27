@@ -2,6 +2,12 @@ open Types
 open Matcher
 
 type t = book_state
+(* creating reset function *)
+let reset t =
+  t.bids <- BidMap.empty;
+  t.asks <- AskMap.empty;
+  t.last_price <- 0.0;
+  get_snapshot t
 
 let empty _symbol = {
   bids = BidMap.empty;

@@ -124,6 +124,12 @@ app.get('/orders', (req, res) => {
   res.json(orders);
 });
 
+function resetBook(){
+    db.prepare('DELETE FROM orders').run();
+    db.prepare('DELETE FROM trades').run();
+    console.log('Book reset: orders and trades cleared');
+}
+
 
 
 // Wiring
