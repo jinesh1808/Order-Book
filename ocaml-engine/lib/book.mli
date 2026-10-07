@@ -18,3 +18,6 @@ val apply_tick : t -> tick -> book_snapshot
 
 (** Get current snapshot *)
 val get_snapshot : t -> book_snapshot
+
+(* reset function *)
+val reset : t -> book_snapshot

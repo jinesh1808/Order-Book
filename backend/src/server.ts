@@ -9,6 +9,7 @@ import { BookGateway } from './sockets/bookGateway';
 import { MarketMaker } from './engine/marketMaker';
 import { Order, Trade } from './engine/types';
 import db from './db';
+import 'dotenv/config';
 
 // User ID -> array of timestamps (jab order place kiya)
 const userOrderTimestamps = new Map<string, number[]>();
@@ -124,10 +125,10 @@ app.get('/orders', (req, res) => {
   res.json(orders);
 });
 
-function resetBook(){
-    db.prepare('DELETE FROM orders').run();
-    db.prepare('DELETE FROM trades').run();
-    console.log('Book reset: orders and trades cleared');
+function resetBook() {
+  db.prepare('DELETE FROM orders').run();
+  db.prepare('DELETE FROM trades').run();
+  console.log('Book reset: orders and trades cleared');
 }
 
 
@@ -187,4 +188,34 @@ process.on('SIGINT', () => {
   binanceClient.disconnect();
   ocamlBridge.stop();
   process.exit(0);
+});
+
+//Admin reset endpoint
+app.post('/admin/reset', (req, res) => {
+  const secret = process.env.ADMIN_SECRET;
+  const provided = req.header('x-admin-secret');
+
+  //secret nahi mila ya galat he -> 401
+  if (!secret || !provided || provided !== secret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  resetBook();                 // SQLite: orders + trades delete
+  ocamlBridge.reset();         // OCaml ki book khaali kar di
+  userOrderTimestamps.clear(); // rate limit map empty
+
+
+  // Socket.io ka use karke sabhi connected users/frontends ko chillakar bolta hai:
+  // "Book reset ho chuki hai! Bids aur Asks dono zero/empty [] 
+  // ho gaye hain, screen refresh kar lo!"
+  bookGateway.broadcastSnapshot({
+    symbol,
+    bids: [],
+    asks: [],
+    timestamp: Date.now(),
+
+  });
+  bookGateway.io.emit('reset');
+  console.log('Book reset successfully'); //Server connected clients ko shout karke bol raha hai "RESET HUA HAI!"
+
+  res.json({ ok: true });
 });

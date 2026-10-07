@@ -2,12 +2,6 @@ open Types
 open Matcher
 
 type t = book_state
-(* creating reset function *)
-let reset t =
-  t.bids <- BidMap.empty;
-  t.asks <- AskMap.empty;
-  t.last_price <- 0.0;
-  get_snapshot t
 
 let empty _symbol = {
   bids = BidMap.empty;
@@ -34,6 +28,14 @@ let get_snapshot t =
     s_asks = ask_levels;
     s_timestamp = int_of_float (Unix.gettimeofday () *. 1000.);
   }
+
+  (* creating reset function *)
+
+let reset t =
+  t.bids <- BidMap.empty;
+  t.asks <- AskMap.empty;
+  t.last_price <- 0.0;
+  get_snapshot t
 
 let apply_tick t tick =
   t.last_price <- tick.t_price;

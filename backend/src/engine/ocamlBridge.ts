@@ -14,7 +14,7 @@ export class OCamlBridge extends EventEmitter {
 
   public start() {
     const enginePath = path.resolve(__dirname, '../../../ocaml-engine/_build/default/bin/main.exe');
-    
+
     // Spawn the process
     this.process = spawn(enginePath, [this.symbol], {
       stdio: ['pipe', 'pipe', 'inherit'], // stdin, stdout, stderr
@@ -30,7 +30,7 @@ export class OCamlBridge extends EventEmitter {
     this.process.stdout.on('data', (data) => {
       buffer += data.toString();
       const lines = buffer.split('\n');
-      
+
       // Keep the last partial line in the buffer
       buffer = lines.pop() || '';
 
@@ -72,6 +72,13 @@ export class OCamlBridge extends EventEmitter {
     if (this.process && this.process.stdin && !this.process.killed) {
       const line = `CANCEL ${orderId}\n`;
       this.process.stdin.write(line);
+    }
+  }
+  //resetting orderbook
+  // /n is important , as ocaml reads line by line , else it will keep waiting and wont go ahead 
+  public reset() {
+    if (this.process && this.process.stdin && !this.process.killed) {
+      this.process.stdin.write('RESET\n');
     }
   }
 
