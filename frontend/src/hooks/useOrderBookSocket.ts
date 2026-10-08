@@ -47,11 +47,7 @@ export function useOrderBookSocket(symbol: string) {
         bidTotal += b.size;
         return { ...b, total: bidTotal };
       });
-      //reset signal ka listener add kar raha hu
-      socket.on('reset', () => {
-        setSnapshot(null); //pura state null kar do
-        setFills([]); //fills array bhi khali kar do
-      })
+
 
       let askTotal = 0;
       data.asks = data.asks.map(a => {
@@ -61,6 +57,11 @@ export function useOrderBookSocket(symbol: string) {
 
       setSnapshot(data);
     });
+    //reset signal ka listener add kar raha hu
+    socket.on('reset', () => {
+      setSnapshot(null); //pura state null kar do
+      setFills([]); //fills array bhi khali kar do
+    })
 
     socket.on('fills', (trades: Trade[]) => {
       setFills(prev => [...prev, ...trades].slice(-50)); // Keep last 50 fills
