@@ -214,7 +214,7 @@ app.post('/admin/reset', (req, res) => {
     timestamp: Date.now(),
 
   });
-  bookGateway.io.emit('reset');
+  bookGateway.broadcastReset(); // bookGateway.io.emit('reset')
   console.log('Book reset successfully'); //Server connected clients ko shout karke bol raha hai "RESET HUA HAI!"
 
   res.json({ ok: true });

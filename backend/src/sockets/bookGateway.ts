@@ -2,7 +2,7 @@ import { Server, Socket } from 'socket.io';
 import { BookSnapshot } from '../engine/types';
 
 export class BookGateway {
-  private io: Server;
+  private io: Server; //encapsulation applied
 
   constructor(io: Server) {
     this.io = io;
@@ -32,5 +32,11 @@ export class BookGateway {
   public broadcastSnapshot(snapshot: BookSnapshot) {
     console.log(`Broadcasting snapshot globally with ${snapshot.bids.length} bids and ${snapshot.asks.length} asks`);
     this.io.emit('book', snapshot);
+  }
+  // io private hai, isliye server.ts se seedha nahi chhu sakte.
+  // Ye method class ke andar hai, to this.io use kar sakta hai.
+  // Saare connected clients ko 'reset' event bhejta hai.
+  public broadcastReset() {
+    this.io.emit('reset');
   }
 }

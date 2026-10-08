@@ -51,6 +51,10 @@ export class OCamlBridge extends EventEmitter {
 
     this.process.on('close', (code) => {
       console.log(`OCaml engine exited with code ${code}`);
+      // Engine band ho gaya (crash ya kill), to handle ko null kar do.
+      // Ab sendOrder/cancelOrder/reset ke `this.process &&` checks false honge
+      // aur band process ke stdin me write karke EPIPE error nahi aayega.
+      this.process = null;
     });
   }
 
