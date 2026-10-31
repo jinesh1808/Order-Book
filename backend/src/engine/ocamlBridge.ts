@@ -13,8 +13,8 @@ export class OCamlBridge extends EventEmitter {
   }
 
   public start() {
-    const enginePath = process.env.ENGINE_PATH ??
-      path.resolve(__dirname, '../../../ocaml-engine/_build/default/bin/main.exe');
+    const enginePath = process.env.ENGINE_PATH
+      ?? path.resolve(__dirname, '../../../ocaml-engine/_build/default/bin/main.exe');
 
     // Spawn the process
     this.process = spawn(enginePath, [this.symbol], {
