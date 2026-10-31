@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import type { BookSnapshot } from '../types/book';
+import { API_URL } from '../config';
 
 // Basic Trade interface
 export interface Trade {
@@ -17,7 +18,7 @@ export function useOrderBookSocket(symbol: string) {
   const [fills, setFills] = useState<Trade[]>([]);
 
   useEffect(() => {
-    fetch('http://localhost:3001/trades')
+    fetch(`${API_URL}/trades`)
       .then(res => res.json())
       .then((data: Trade[]) => {
         // data comes ordered by timestamp DESC, we need it ASC for chart if we want chronological,
@@ -28,7 +29,7 @@ export function useOrderBookSocket(symbol: string) {
       })
       .catch(console.error);
 
-    const socket: Socket = io('http://localhost:3001');
+    const socket: Socket = io(API_URL);
 
     socket.on('connect', () => {
       setIsConnected(true);

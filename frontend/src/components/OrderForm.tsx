@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { API_URL } from '../config';
 
 export function OrderForm({ lastPrice }: { lastPrice?: number }) {
   const [userId] = useState(() => `user_${Math.floor(Math.random() * 10000)}`);
@@ -15,7 +16,7 @@ export function OrderForm({ lastPrice }: { lastPrice?: number }) {
     setErrorMsg(null);// Har naye submit se pehle purana error clear kar do
 
     try {
-      const res = await fetch('http://localhost:3001/orders', {//we are now storing response in res
+      const res = await fetch(`${API_URL}/orders`, {//we are now storing response in res
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
